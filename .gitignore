@@ -1,2 +1,5 @@
 
 \.env
+
+# Ignore generated pid files
+*.pid
