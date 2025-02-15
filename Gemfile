@@ -1,0 +1,15 @@
+source 'http://rubygems.org'
+
+gem 'sinatra'
+gem 'rake'
+gem 'require_all'
+gem 'puma'
+gem 'shotgun'
+gem 'pry'
+gem 'bcrypt'
+gem "tux"
+gem 'mongoid'
+gem 'json'
+gem 'rack-console'
+gem 'pry-coolline'
+gem 'dotenv'
