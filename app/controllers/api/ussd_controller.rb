@@ -8,8 +8,22 @@ module Api
       content_type :json
     end
 
-    post '/api/ussd/process_request' do
-      "END TODO"
+    post '/api/ussd/process_request/:session/:session_id/:state' do
+      process_request
+    end
+
+    put '/api/ussd/process_request/:session/:session_id/:state' do
+      process_request
+    end
+
+    def process_request
+      puts params.inspect
+
+      { shouldClose: true,
+        ussdMenu: 'TODO',
+        responseMessage: 'TODO',
+        responseExitCode: 200,
+      }.to_json
     end
   end
 end
