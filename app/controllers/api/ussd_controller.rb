@@ -5,7 +5,7 @@ module Api
     ##
     # Respond to all requests in text/plain
     before do
-      content_type :text
+      content_type :json
     end
 
     post '/api/ussd/process_request' do
