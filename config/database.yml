@@ -1,6 +1,6 @@
 development:
   clients:
     default:
-      database: mongoid
+      database: sanarei_middleware
       hosts:
         - localhost:27017
