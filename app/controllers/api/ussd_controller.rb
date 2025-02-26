@@ -2,12 +2,6 @@ require './config/environment'
 
 module Api
   class UssdController < BaseController
-    ##
-    # Respond to all requests in text/plain
-    before do
-      content_type :json
-    end
-
     post '/api/ussd/process_request/:session/:session_id/:state' do
       process_request
     end
@@ -19,7 +13,9 @@ module Api
     ##
     # Process the request from USSD
     def process_request
-      RequestDispatcher.call(params)
+      payload_params = JSON.parse(request.body.read)
+      request_params = params.merge(payload_params).symbolize_keys
+      RequestDispatcher.call(request_params)
     end
   end
 end
