@@ -16,14 +16,10 @@ module Api
       process_request
     end
 
+    ##
+    # Process the request from USSD
     def process_request
-      puts params.inspect
-
-      { shouldClose: true,
-        ussdMenu: 'TODO',
-        responseMessage: 'TODO',
-        responseExitCode: 200,
-      }.to_json
+      RequestDispatcher.call(params)
     end
   end
 end
