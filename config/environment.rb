@@ -18,3 +18,4 @@ end
 
 require './app/controllers/application_controller'
 require_all 'app'
+require_all 'lib'
