@@ -9,6 +9,9 @@ class RequestDispatcher
   end
 
   def initialize(params)
+    # Check or create session based on sessionId
+    @session = AppSession.find_or_create_by(session_id: params[:sessionId])
+
     puts 'AppCODE'
     puts params
     @app = SanareiApp.find_by(app_code: params[:shortCode])
