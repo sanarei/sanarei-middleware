@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # An active record model for persisting Sanarei apps
 class AppSession

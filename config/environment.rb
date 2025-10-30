@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ENV['SINATRA_ENV'] ||= 'development'
 ENV['SINATRA_ACTIVESUPPORT_WARNING'] ||= 'false'
 
