@@ -19,7 +19,12 @@ gem 'sinatra'
 gem 'tux'
 gem 'uri', '1.0.3'
 
-group :development do
+group :development, :test do
+  gem 'database_cleaner-mongoid'
+  gem 'factory_bot'
+  gem 'faker'
+  gem 'rack-test'
+  gem 'rspec'
   gem 'rubocop', require: false
   gem 'rubocop-performance', require: false
   gem 'rubocop-rake', require: false
