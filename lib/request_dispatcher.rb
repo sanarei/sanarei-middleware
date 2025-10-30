@@ -11,6 +11,7 @@ class RequestDispatcher
   def initialize(params)
     # Check or create a session based on sessionId
     @session = AppSession.find_or_create_by(session_id: params[:session_id])
+    @input = params[:text] # Capture the input from USSD
 
     puts 'AppCODE'
     puts params
