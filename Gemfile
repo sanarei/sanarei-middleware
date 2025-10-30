@@ -1,8 +1,9 @@
 source 'http://rubygems.org'
 
 gem 'logger', '~> 1.7'
-gem 'sinatra'
+gem 'rack', '~> 3.2'
 gem 'rake'
+gem 'sinatra'
 gem 'require_all'
 gem 'puma'
 gem 'shotgun'
