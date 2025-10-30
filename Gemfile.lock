@@ -95,7 +95,7 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode_utils (1.4.0)
-    uri (1.0.2)
+    uri (1.0.3)
 
 PLATFORMS
   arm64-darwin-22
@@ -117,6 +117,7 @@ DEPENDENCIES
   shotgun
   sinatra
   tux
+  uri (= 1.0.3)
 
 BUNDLED WITH
    2.6.3

@@ -14,4 +14,5 @@ gem 'rake'
 gem 'require_all'
 gem 'shotgun'
 gem 'sinatra'
+gem 'uri', '1.0.3'
 gem "tux"
