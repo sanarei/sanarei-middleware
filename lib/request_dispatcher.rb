@@ -20,14 +20,12 @@ class RequestDispatcher
     puts "Print input: #{@input}"
     if @session.app_domain
       @response = 'END Domain already set!!'
+    elsif @input.blank?
+      @response = 'CON Enter App domain'
     else
-      if @input.blank?
-        @response = 'CON Enter App domain'
-      else
-        domain = @input
-        @session.update(app_domain: domain)
-        @response = "CON Domain set to #{domain}"
-      end
+      domain = @input
+      @session.update(app_domain: domain)
+      @response = "CON Domain set to #{domain}"
     end
 
     close_session = response.to_s.starts_with?('END')

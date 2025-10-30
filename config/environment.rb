@@ -1,8 +1,8 @@
-ENV['SINATRA_ENV'] ||= "development"
+ENV['SINATRA_ENV'] ||= 'development'
 ENV['SINATRA_ACTIVESUPPORT_WARNING'] ||= 'false'
 
 require 'bundler/setup'
-Bundler.require(:default, ENV['SINATRA_ENV'])
+Bundler.require(:default, ENV.fetch('SINATRA_ENV', nil))
 
 require 'dotenv'
 Dotenv.load
