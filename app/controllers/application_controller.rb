@@ -3,7 +3,9 @@
 require './config/environment'
 
 class ApplicationController < Sinatra::Base
-  set :host_authorization, { permitted_hosts: ENV.fetch('PROD_DOMAIN', nil) }
+  configure :production, :development do
+    set :host_authorization, { permitted_hosts: ENV.fetch('PROD_DOMAIN', nil) }
+  end
 
   configure do
     set :public_folder, 'public'
