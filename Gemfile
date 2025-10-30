@@ -1,5 +1,6 @@
 source 'http://rubygems.org'
 
+gem 'logger', '~> 1.7'
 gem 'sinatra'
 gem 'rake'
 gem 'require_all'
