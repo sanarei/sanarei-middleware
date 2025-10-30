@@ -9,8 +9,8 @@ class RequestDispatcher
   end
 
   def initialize(params)
-    @session = AppSession.find_or_create_by(session_id: params[:sessionId])
     # Check or create a session based on sessionId
+    @session = AppSession.find_or_create_by(session_id: params[:session_id])
 
     puts 'AppCODE'
     puts params
