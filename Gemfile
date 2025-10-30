@@ -2,8 +2,8 @@ source 'http://rubygems.org'
 
 gem 'bcrypt'
 gem 'dotenv'
-gem 'logger', '~> 1.7'
 gem 'json'
+gem 'logger', '~> 1.7'
 gem 'mongoid'
 gem 'pry'
 gem 'pry-coolline'
@@ -14,5 +14,11 @@ gem 'rake'
 gem 'require_all'
 gem 'shotgun'
 gem 'sinatra'
+gem 'tux'
 gem 'uri', '1.0.3'
-gem "tux"
+
+group :development do
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rake', require: false
+end
