@@ -2,7 +2,7 @@
 
 class RequestDispatcher
   attr_reader :app, :session, :input, :phone_number, :client, :state,
-              :response, :input
+              :response
 
   class << self
     def call(params)
@@ -18,6 +18,13 @@ class RequestDispatcher
 
   def process_request
     puts "Print input: #{@input}"
+    set_response
+    build_response
+  end
+
+  private
+
+  def set_response
     if @session.app_domain
       @response = 'END Domain already set!!'
     elsif @input.blank?
@@ -27,7 +34,9 @@ class RequestDispatcher
       @session.update(app_domain: domain)
       @response = "CON Domain set to #{domain}"
     end
+  end
 
+  def build_response
     close_session = response.to_s.starts_with?('END')
     response = @response.gsub('END ', '').gsub('CON ', '')
 
