@@ -6,7 +6,8 @@ class AppSession
 
   # Defined fields
   field :session_id, type: String
-  field :ussd_app_id, type: String
+  field :app_domain, type: String
+  field :current_stage, type: String
 
   # SanareiApp model validations
   validates :session_id, uniqueness: true
