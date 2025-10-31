@@ -116,6 +116,75 @@ gem install unicorn
 bundle exec unicorn -c config/unicorn.rb
 ```
 
+## Background Jobs with Sidekiq
+
+This project uses Sidekiq for background job processing. Redis is required and must be running before you start Sidekiq.
+
+- Redis URL: set via the REDIS_URL environment variable (defaults to redis://localhost:6379/0).
+- Sidekiq client/server config: see config/initializers/sidekiq.rb
+- Queues and concurrency: see config/sidekiq.yml (default and website_fetcher queues are defined).
+
+### Start Sidekiq
+
+Run Sidekiq in a separate terminal alongside your web server:
+```bash
+bundle exec sidekiq -r ./config/environment -C config/sidekiq.yml
+```
+
+Common variations:
+- Specify environment: RACK_ENV=production bundle exec sidekiq -r ./config/environment -C config/sidekiq.yml
+- Specify queues: bundle exec sidekiq -r ./config/environment -q website_fetcher -q default
+
+### Enqueuing Jobs
+
+An example worker is provided at app/workers/website_fetcher_worker.rb. You can enqueue jobs from anywhere after the app environment is loaded.
+
+Basic usage:
+```ruby
+WebsiteFetcherWorker.perform_async('https://example.com')
+```
+
+With options (headers, timeouts, etc.):
+```ruby
+options = {
+  headers: { 'User-Agent' => 'MyBot/1.0' },
+  timeout: 10,
+  follow_redirects: true
+}
+WebsiteFetcherWorker.perform_async('https://example.com', options)
+```
+
+Schedule for later:
+```ruby
+WebsiteFetcherWorker.perform_in(5.minutes, 'https://example.com')
+WebsiteFetcherWorker.perform_at(1.hour.from_now, 'https://example.com')
+```
+
+See app/workers/example_usage.rb for additional examples and controller usage patterns.
+
+### Optional: Sidekiq Web UI (development)
+
+To view the job dashboard in development, you can mount the Sidekiq Web UI. Add the following to config.ru (and only enable in trusted environments):
+```ruby
+require 'sidekiq/web'
+# Optionally add basic auth for protection in non-dev environments
+# Sidekiq::Web.use Rack::Auth::Basic do |user, pass|
+#   [user, pass] == [ENV['SIDEKIQ_USER'], ENV['SIDEKIQ_PASSWORD']]
+# end
+
+map '/sidekiq' do
+  run Sidekiq::Web
+end
+```
+Then start your app server and visit http://localhost:9292/sidekiq
+
+### Troubleshooting
+
+- Ensure Redis is running: redis-cli ping should return PONG.
+- Verify REDIS_URL matches your Redis instance (default is redis://localhost:6379/0).
+- Check Sidekiq logs for errors and the retries tab for failed jobs.
+- Make sure you are pushing to a queue that your Sidekiq process is listening to (see config/sidekiq.yml or pass -q flags).
+
 ## Development
 
 ### Running Tests
