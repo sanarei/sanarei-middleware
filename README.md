@@ -6,6 +6,7 @@ A Sinatra-based middleware application generated using [Corneal](https://github.
 
 - Ruby 3.x
 - MongoDB (default database)
+- Redis (for background jobs)
 - Bundler
 
 ## MongoDB Installation
@@ -27,6 +28,27 @@ sudo systemctl enable mongodb
 ### Verify MongoDB Installation
 ```bash
 mongo --version
+```
+
+## Redis Installation
+
+### MacOS
+```bash
+brew install redis
+brew services start redis
+```
+
+### Linux (Ubuntu/Debian)
+```bash
+sudo apt-get install -y redis-server
+sudo systemctl start redis
+sudo systemctl enable redis
+```
+
+### Verify Redis Installation
+```bash
+redis-cli ping
+# Should return: PONG
 ```
 
 ## Setup

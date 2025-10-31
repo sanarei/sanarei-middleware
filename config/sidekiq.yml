@@ -1,0 +1,14 @@
+---
+:concurrency: 5
+:queues:
+  - default
+  - website_fetcher
+
+development:
+  :concurrency: 2
+
+production:
+  :concurrency: 10
+
+test:
+  :concurrency: 1
