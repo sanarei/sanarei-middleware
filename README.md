@@ -108,9 +108,9 @@ bundle exec rubocop
 
 ### Interactive Console
 ```bash
-bundle exec tux
+bundle exec pry -r ./config/environment
 # or
-bundle exec pry
+bundle exec tux # tux has not been supported for a while, use pry instead
 ```
 
 ## Project Structure
