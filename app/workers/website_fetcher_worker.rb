@@ -38,7 +38,8 @@ class WebsiteFetcherWorker
     }
 
     # Log the result or save to database
-    logger.info "Processed content from #{url}: #{content_data[:content_type]}, Size: #{response.body.bytesize} bytes"
+    logger.info "Processed content from #{url}: #{content_data[:content_type]}, " \
+                "Size: #{response.body.bytesize} bytes"
 
     # TODO: Save to your model or perform additional processing
     # Example:
