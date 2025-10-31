@@ -59,6 +59,7 @@ GEM
       activemodel (>= 5.1, < 8.1, != 7.0.0)
       concurrent-ruby (>= 1.0.5, < 2.0)
       mongo (>= 2.18.0, < 3.0.0)
+    msgpack (1.8.0)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
     mustermann (3.0.3)
@@ -172,6 +173,7 @@ GEM
     unicode-emoji (4.1.0)
     unicode_utils (1.4.0)
     uri (1.0.3)
+    zlib (3.2.2)
 
 PLATFORMS
   arm64-darwin-22
@@ -187,6 +189,7 @@ DEPENDENCIES
   json
   logger (~> 1.7)
   mongoid
+  msgpack
   pry
   pry-coolline
   puma
@@ -205,6 +208,7 @@ DEPENDENCIES
   sinatra
   tux
   uri (= 1.0.3)
+  zlib
 
 BUNDLED WITH
    2.6.3
