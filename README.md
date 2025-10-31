@@ -55,7 +55,7 @@ redis-cli ping
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone git@github.com:sanarei/sanarei-middleware.git
 cd sanarei-middleware
 ```
 
