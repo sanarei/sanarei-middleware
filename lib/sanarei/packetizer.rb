@@ -18,8 +18,6 @@ require 'base64'
 #     "prev": Integer|nil,      # previous packet id or nil for the first packet
 #     "next": Integer|nil,      # next packet id or nil for the last packet
 #     "checksum": String,       # lowercase hex CRC32 of the payload bytes (8 chars)
-#     "checksum_alg": String,   # currently "crc32"
-#     "encoding": String,       # "base64" (encoding of the payload field)
 #     "payload": String         # Base64 of the raw Gzip-compressed chunk
 #   }
 #
@@ -121,8 +119,7 @@ module Sanarei
     # @param packet_size [Integer] Target payload size (in bytes) per packet.
     # @return [Array<String]] Array of JSON-encoded packet strings.
     # @note The checksum field covers only the payload bytes using CRC32
-    #   (lowercase hex, 8 chars). The algorithm name is provided in
-    #   checksum_alg to allow future changes.
+    #   (lowercase hex, 8 chars). The algorithm is CRC32
     # @example
     #   gz = compress_text('A' * 500)
     #   split_into_json_packets(gz, packet_size: 140).length # => 4
@@ -152,8 +149,6 @@ module Sanarei
           prev: i == 0 ? nil : i,
           next: i == num_packets - 1 ? nil : i + 2,
           checksum: checksum,
-          checksum_alg: 'crc32',
-          encoding: 'base64',
           payload: Base64.strict_encode64(chunk)
         }
 
