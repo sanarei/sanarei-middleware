@@ -34,6 +34,19 @@ class RequestDispatcher
   # @!visibility private
   def set_response
     if @session.app_domain
+      if @input == 'SEND PACKETS' || @input == 'SEND NEXT PACKETS'
+        packets_sent = @session.packets_sent
+        packet_position = @session.packets.count - (@session.packets.count - packets_sent)
+        packet = @session.packets[packet_position]
+        @session.update(packets_sent: packets_sent+1)
+
+        @response = if packet
+                      "CON #{packet}"
+                    else
+                      'CON ALL PACKETS SENT'
+                    end
+        return
+      end
       # Generate packets from the website in the background
       WebsiteFetcherWorker.new.perform(@session.id)
       @response = if @input == 'Packets ready?' && (@session.packets.nil? || @session.packets.count < 1)

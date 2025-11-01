@@ -14,6 +14,7 @@ class AppSession
   field :content_error, type: String
   field :html_context, type: String
   field :packets, type: Array
+  field :packets_sent, type: Integer, default: 0
 
   # SanareiApp model validations
   validates :session_id, uniqueness: true
