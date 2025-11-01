@@ -10,6 +10,10 @@ class AppSession
   field :session_id, type: String
   field :app_domain, type: String
   field :current_stage, type: String
+  field :content_fetched, type: Boolean
+  field :content_error, type: String
+  field :html_context, type: String
+  field :packets, type: Array
 
   # SanareiApp model validations
   validates :session_id, uniqueness: true
