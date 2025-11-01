@@ -27,8 +27,6 @@ require 'msgpack'
 #     "prev": Integer | nil,   # previous id, optional
 #     "next": Integer | nil,   # next id, optional
 #     "checksum": String,      # lowercase hex CRC32 of the payload bytes (8 chars)
-#     "checksum_alg": String,  # currently "crc32"
-#     "encoding": String,      # "base64"
 #     "payload": String        # Base64 of Gzip-compressed bytes
 #   }
 #
@@ -221,11 +219,15 @@ module Sanarei
     def payload_bytes(h)
       enc = (fetch_key(h, :encoding) || '').to_s.downcase
       payload = fetch_key(h, :payload)
-      if enc == 'base64'
-        Base64.strict_decode64(payload.to_s)
-      else
-        payload.to_s.b
+      # Default to Base64 when encoding is omitted (new compact schema)
+      if enc == 'base64' || enc.empty?
+        begin
+          return Base64.strict_decode64(payload.to_s)
+        rescue ArgumentError
+          # Fallback: treat as raw bytes if not valid Base64
+        end
       end
+      payload.to_s.b
     end
 
     # Internal: Inflate a Gzip-compressed binary string.
