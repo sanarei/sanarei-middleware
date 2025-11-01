@@ -9,10 +9,12 @@ class WebsiteFetcherWorker
 
   sidekiq_options queue: :website_fetcher, retry: 3
 
-  def perform(url, app_session_id, options = {})
-    @url = url
+  def perform(app_session_id, options = {})
     @session = AppSession.find_by(session_id: app_session_id)
     raise "App session not found: #{app_session_id}" unless @session
+
+    @url = session.app_domain
+    raise "Invalid URL: #{url}" unless url.present?
 
     logger.info "Fetching website content from: #{url}"
 
