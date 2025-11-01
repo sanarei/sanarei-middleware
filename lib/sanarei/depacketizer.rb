@@ -134,9 +134,7 @@ module Sanarei
         # Fast path: if it's a JSON object string
         if binary.is_a?(String)
           str = binary.strip
-          if str.start_with?('{') && str.end_with?('}')
-            return JSON.parse(str)
-          end
+          return JSON.parse(str) if str.start_with?('{') && str.end_with?('}')
         end
       rescue StandardError
         # ignore and fallback to MessagePack
@@ -202,7 +200,8 @@ module Sanarei
       when 'crc32'
         calc = Zlib.crc32(bytes).to_s(16).rjust(8, '0')
         unless checksum == calc
-          raise "checksum mismatch on packet ##{fetch_key(h, :id)} (index #{idx}): expected #{checksum}, got #{calc}"
+          raise "checksum mismatch on packet ##{fetch_key(h,
+                                                          :id)} (index #{idx}): expected #{checksum}, got #{calc}"
         end
       else
         raise "unsupported checksum algorithm: #{alg}"
