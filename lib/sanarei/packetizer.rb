@@ -138,8 +138,8 @@ module Sanarei
 
         packet = {
           id: i + 1,
-          prev: (i == 0) ? nil : i,
-          next: (i == num_packets - 1) ? nil : i + 2,
+          prev: i == 0 ? nil : i,
+          next: i == num_packets - 1 ? nil : i + 2,
           checksum: checksum,
           checksum_alg: 'crc32',
           payload: chunk
