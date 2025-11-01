@@ -7,23 +7,51 @@ require 'msgpack'
 # ----------------------
 # Reconstructs the original text that was packetized by Sanarei::Packetizer.
 #
-# Steps performed:
-# - Decode each MessagePack packet into a Ruby Hash
-# - Optionally verify per-chunk CRC32 checksums
-# - Order packets (by id) and concatenate their payload chunks
-# - Gzip-decompress to recover the original text
+# This class performs the inverse operation of Sanarei::Packetizer. It accepts
+# an Array of MessagePack-encoded packet binaries, validates and orders them,
+# concatenates their payload chunks, and inflates the resulting Gzip stream to
+# recover the original text.
 #
-# Expected packet hash structure (after MessagePack unpack):
+# Processing pipeline:
+# - Unpack: MessagePack → Ruby Hash for each packet
+# - Validate: ensure required keys exist; optionally verify per-chunk CRC32
+# - Order: sort deterministically by id and verify a contiguous sequence
+# - Assemble: concatenate payload chunks in id order
+# - Inflate: Gzip-decompress to the original String
+#
+# Expected packet hash structure (after MessagePack.unpack):
 #   {
-#     id: Integer,
-#     prev: Integer | nil,
-#     next: Integer | nil,
+#     id: Integer,           # 1-based position in the sequence
+#     prev: Integer | nil,   # previous id, optional
+#     next: Integer | nil,   # next id, optional
 #     checksum: String,      # lowercase hex CRC32 of the payload (8 chars)
 #     checksum_alg: String,  # currently "crc32"
-#     payload: String        # raw binary chunk (slice of gzipped input)
+#     payload: String        # raw binary chunk (slice of Gzip-compressed data)
 #   }
-# Keys may also appear as Strings depending on how they were serialized. This
-# class handles either symbols or strings.
+#
+# Notes:
+# - Keys may be stored as either Symbols or Strings; this class accepts both.
+# - The checksum covers only the payload bytes of each packet, not the id/links.
+# - Packet ids are expected to start at 1 and be contiguous; otherwise an
+#   ArgumentError is raised.
+# - Checksum verification may be disabled by passing verify: false.
+#
+# Usage examples:
+#   # 1) One-shot reconstruction from packet binaries
+#   packets = Sanarei::Packetizer.call('<html>ok</html>', packet_size: 140)
+#   text = Sanarei::Depacketizer.call(packets) # => "<html>ok</html>"
+#
+#   # 2) With checksum verification disabled
+#   text = Sanarei::Depacketizer.call(packets, verify: false)
+#
+# Error handling:
+# - ArgumentError is raised when input is empty, malformed, or missing fields.
+# - RuntimeError is raised on checksum mismatch when verify is true.
+# - Gzip inflate errors are re-raised with a descriptive message.
+#
+# See also:
+# - Sanarei::Packetizer for the forward operation and packet schema details.
+# - Zlib and MessagePack for compression and serialization internals.
 module Sanarei
   class Depacketizer
     # Public: One-shot reconstruction call.
@@ -33,19 +61,37 @@ module Sanarei
     # @return [String] The original (decompressed) text
     # @raise [ArgumentError] if packets is empty or invalid
     # @raise [RuntimeError] if checksum verification fails and verify is true
+    # @example Basic usage
+    #   packets = Sanarei::Packetizer.call('<html>ok</html>', packet_size: 140)
+    #   Sanarei::Depacketizer.call(packets) # => "<html>ok</html>"
+    # @example Disable checksum verification
+    #   Sanarei::Depacketizer.call(packets, verify: false)
     def self.call(packets, verify: true)
       new(packets, verify: verify).reconstruct
     end
 
-    # @param packets [Array<String>] MessagePack-encoded packet binaries
-    # @param verify [Boolean]
+    # Initialize a Depacketizer instance.
+    #
+    # @param packets [Array<String>] MessagePack-encoded packet binaries produced by Sanarei::Packetizer.
+    # @param verify [Boolean] If true (default), each packet's payload checksum is verified during reconstruction.
+    # @return [void]
     def initialize(packets, verify: true)
       @packet_binaries = Array(packets)
       @verify = verify
     end
 
     # Reconstruct to original text.
-    # @return [String]
+    #
+    # Performs unpack → validate → sort → assemble → inflate.
+    #
+    # @return [String] The original text provided to Packetizer prior to compression.
+    # @raise [ArgumentError] if no packets are provided, if required fields are missing,
+    #   or if the id sequence is not contiguous starting from 1.
+    # @raise [RuntimeError] if checksum verification fails and verify is true.
+    # @raise [RuntimeError] if Gzip inflation fails.
+    # @example
+    #   packets = Sanarei::Packetizer.call('hello', packet_size: 5)
+    #   Sanarei::Depacketizer.new(packets, verify: true).reconstruct # => "hello"
     def reconstruct
       raise ArgumentError, 'no packets provided' if @packet_binaries.empty?
 
