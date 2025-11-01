@@ -34,7 +34,13 @@ class RequestDispatcher
   # @!visibility private
   def set_response
     if @session.app_domain
-      @response = 'END Domain already set!!'
+      # Generate packets from the website in the background
+      WebsiteFetcherWorker.new.perform(@session.id)
+      @response = if @input == 'Packets ready?' && (@session.packets.nil? || @session.packets.count < 1)
+                    'CON WAIT: Packets pending'
+                  else
+                    'CON PACKETS READY'
+                  end
     elsif @input.blank?
       @response = 'CON Enter App domain'
     else
