@@ -30,7 +30,8 @@ require 'httparty'
 #   session = AppSession.find_or_create_by(session_id: 'abc123')
 #   session.update(app_domain: 'https://example.com')
 #   # Optional HTTParty options are forwarded as-is
-#   WebsiteFetcherWorker.perform_async(session.id.to_s, headers: { 'User-Agent' => 'SanareiBot/1.0' }, timeout: 10)
+#   WebsiteFetcherWorker.perform_async(session.id.to_s,
+#   headers: { 'User-Agent' => 'SanareiBot/1.0' }, timeout: 10)
 #
 # @see Sanarei::Packetizer for packet generation
 # @see Sanarei::Depacketizer for reversing packets back to text
@@ -57,7 +58,8 @@ class WebsiteFetcherWorker
   # fetched content and generated packets. On errors, records an error message
   # on the session and raises.
   #
-  # @param app_session_id [String, BSON::ObjectId, Integer] Identifier of the AppSession to operate on.
+  # @param app_session_id [String, BSON::ObjectId, Integer] Identifier of the AppSession to operate
+  # on.
   # @param options [Hash] Optional HTTParty options (e.g., :headers, :timeout, :follow_redirects).
   # @return [void]
   # @raise [RuntimeError] when the AppSession is missing or URL is blank.
