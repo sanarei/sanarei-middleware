@@ -59,7 +59,7 @@ class RequestDispatcher
     else
       domain = @input
       @session.update(app_domain: domain)
-      @response = "CON Domain set to #{domain}"
+      @response = "CON DOMAIN SET TO #{domain}"
     end
   end
 
