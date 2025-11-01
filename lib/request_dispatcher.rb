@@ -24,6 +24,14 @@ class RequestDispatcher
 
   private
 
+  # Determine the next USSD response based on the current session and input.
+  #
+  # - If a domain is already set for the session, we end the interaction.
+  # - If no input was provided (first request), we prompt for the domain.
+  # - Otherwise, we persist the provided domain and continue the session.
+  #
+  # @return [void]
+  # @!visibility private
   def set_response
     if @session.app_domain
       @response = 'END Domain already set!!'
@@ -36,6 +44,17 @@ class RequestDispatcher
     end
   end
 
+  # Build the USSD gateway-compatible response payload.
+  #
+  # Strips leading control tokens ("END ", "CON ") from the message while
+  # computing the shouldClose flag expected by many USSD gateways.
+  #
+  # @return [Hash] Structured response with keys:
+  #   - :shouldClose [Boolean] whether the session should be terminated
+  #   - :ussdMenu [String] the menu text to display
+  #   - :responseMessage [String] same as ussdMenu for compatibility
+  #   - :responseExitCode [Integer] status code (200 for success)
+  # @!visibility private
   def build_response
     close_session = response.to_s.starts_with?('END')
     response = @response.gsub('END ', '').gsub('CON ', '')
