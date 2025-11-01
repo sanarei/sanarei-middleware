@@ -26,6 +26,21 @@ class WebsiteFetcherWorker
 
   private
 
+  # Internal: Normalize and summarize an HTTP response for persistence.
+  #
+  # This method extracts essential attributes from the HTTParty response and
+  # prepares a Hash that can be logged or stored. No I/O or DB writes are
+  # performed here to keep the worker testable; callers can persist the result.
+  #
+  # @param url [String] The URL that was fetched.
+  # @param response [HTTParty::Response] The HTTP response object.
+  # @return [Hash] A normalized summary with keys:
+  #   - :url [String]
+  #   - :content [String] raw response body
+  #   - :content_type [String, nil] value of the Content-Type header
+  #   - :status_code [Integer]
+  #   - :fetched_at [Time]
+  # @!visibility private
   def process_content(url, response)
     # Store the fetched content in MongoDB or process it
     # Example: You can create a model to store fetched content
