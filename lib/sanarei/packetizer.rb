@@ -127,13 +127,21 @@ module Sanarei
     #   gz = compress_text('A' * 500)
     #   split_into_json_packets(gz, packet_size: 140).length # => 4
     def split_into_json_packets(compressed_text, packet_size: 140)
+      # Enforce a hard limit on Base64 payload length of 130 characters.
+      # Base64 expands data by 4/3 and pads to 4-char boundaries. To ensure
+      # the encoded payload never exceeds 130 chars, the raw chunk must be
+      # at most floor(130 / 4) * 3 = 96 bytes.
+      max_b64_chars = 50
+      max_raw_bytes = (max_b64_chars / 4) * 3 # => 96
+      chunk_size = [packet_size, max_raw_bytes].min
+
       total_length = compressed_text.bytesize
-      num_packets = (total_length.to_f / packet_size).ceil
+      num_packets = (total_length.to_f / chunk_size).ceil
       packets = []
 
       num_packets.times do |i|
-        start_idx = i * packet_size
-        end_idx = [start_idx + packet_size, total_length].min
+        start_idx = i * chunk_size
+        end_idx = [start_idx + chunk_size, total_length].min
         chunk = compressed_text[start_idx...end_idx]
 
         # Compute CRC32 checksum for integrity verification of the raw bytes
