@@ -104,18 +104,42 @@ module Sanarei
 
     private
 
+    # Internal: Fetch a value from a packet Hash by Symbol or String key.
+    #
     # MessagePack.unpack may return keys as Symbols (as packed) or Strings depending
-    # on upstream. We standardize access via fetch_key helper.
+    # on the encoder/decoder configuration. This helper normalizes access so
+    # callers can consistently request values using a Symbol.
+    #
+    # @param hash [Hash] A decoded packet hash from MessagePack.unpack.
+    # @param key [Symbol] The desired key as a Symbol (e.g., :id, :payload).
+    # @return [Object, nil] The value for the given key, or nil if not present.
+    # @!visibility private
     def fetch_key(hash, key)
       hash[key] || hash[key.to_s]
     end
 
+    # Internal: Safely unpack a MessagePack binary into a Ruby Hash.
+    #
+    # @param binary [String] MessagePack-encoded packet binary.
+    # @return [Hash] Decoded packet hash (keys may be Symbols or Strings).
+    # @raise [ArgumentError] if MessagePack unpacking fails.
+    # @!visibility private
     def safe_unpack(binary)
       MessagePack.unpack(binary)
     rescue StandardError => e
       raise ArgumentError, "invalid packet (MessagePack unpack failed): #{e.message}"
     end
 
+    # Internal: Validate decoded packets and sort them deterministically by id.
+    #
+    # Performs presence checks for required fields, optional checksum verification,
+    # sorts by :id, and enforces a contiguous sequence starting from 1.
+    #
+    # @param arr [Array<Hash>] Array of decoded packet hashes.
+    # @return [void]
+    # @raise [ArgumentError] when required fields are missing or the sequence is broken.
+    # @raise [RuntimeError] on checksum mismatch when verification is enabled.
+    # @!visibility private
     def validate_and_sort!(arr)
       # Basic presence checks
       arr.each_with_index do |h, idx|
@@ -141,6 +165,17 @@ module Sanarei
       end
     end
 
+    # Internal: Verify a packet's payload checksum against the provided value.
+    #
+    # Currently supports CRC32 (lowercase hex, 8 chars). If verification fails,
+    # a RuntimeError is raised.
+    #
+    # @param h [Hash] Decoded packet hash.
+    # @param idx [Integer] Index of the packet within the input array (for error messages).
+    # @return [void]
+    # @raise [RuntimeError] if checksum mismatches when algorithm is supported.
+    # @raise [RuntimeError] if the checksum algorithm is unsupported.
+    # @!visibility private
     def verify_checksum!(h, idx)
       alg = (fetch_key(h, :checksum_alg) || 'crc32').to_s.downcase
       checksum = fetch_key(h, :checksum).to_s.downcase
@@ -150,14 +185,19 @@ module Sanarei
       when 'crc32'
         calc = Zlib.crc32(payload).to_s(16).rjust(8, '0')
         unless checksum == calc
-          raise "checksum mismatch on packet ##{fetch_key(h,
-                                                          :id)} (index #{idx}): expected #{checksum}, got #{calc}"
+          raise "checksum mismatch on packet ##{fetch_key(h, :id)} (index #{idx}): expected #{checksum}, got #{calc}"
         end
       else
         raise "unsupported checksum algorithm: #{alg}"
       end
     end
 
+    # Internal: Inflate a Gzip-compressed binary string.
+    #
+    # @param gzipped [String] Concatenated Gzip-compressed payload bytes.
+    # @return [String] The decompressed original text.
+    # @raise [RuntimeError] if Gzip inflation fails.
+    # @!visibility private
     def inflate(gzipped)
       Zlib::GzipReader.new(StringIO.new(gzipped)).read
     rescue Zlib::GzipFile::Error => e
