@@ -17,6 +17,7 @@ module Api
     def process_request
       payload_params = JSON.parse(request.body.read)
       request_params = params.merge(payload_params).symbolize_keys
+      puts "Session params: #{request_params}" # Print session params
       RequestDispatcher.call(request_params)
     end
   end
