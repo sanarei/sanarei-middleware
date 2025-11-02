@@ -14,6 +14,7 @@ class RequestDispatcher
     # Check or create a session based on sessionId
     @session = AppSession.find_or_create_by(session_id: params[:session_id])
     @input = params[:text].to_s # Capture the input from USSD
+    @input = '' if @input == params[:shortCode].to_s
   end
 
   def process_request
