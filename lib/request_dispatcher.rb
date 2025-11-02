@@ -42,7 +42,7 @@ class RequestDispatcher
         @session.update(packets_sent: packets_sent+1)
 
         @response = if packet
-                      "CON #{packet}"
+                      "CON #{Base64.encode64(packet).delete("\n")}"
                     else
                       'CON ALL PACKETS SENT'
                     end
