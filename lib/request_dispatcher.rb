@@ -44,7 +44,7 @@ class RequestDispatcher
         @response = if packet
                       "CON #{Base64.encode64(packet).delete("\n")}"
                     else
-                      'CON ALL PACKETS SENT'
+                      'END ALL PACKETS SENT'
                     end
         return
       end
