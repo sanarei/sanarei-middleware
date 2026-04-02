@@ -4,3 +4,12 @@ development:
       database: sanarei_middleware
       hosts:
         - localhost:27017
+production:
+  clients:
+    default:
+      database: sanarei_middleware
+      uri: <%= ENV["MONGODB_URI"] %>
+      options:
+        server_selection_timeout: 5
+  options:
+    
