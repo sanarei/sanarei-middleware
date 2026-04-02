@@ -7,7 +7,6 @@ development:
 production:
   clients:
     default:
-      database: sanarei_middleware
       uri: <%= ENV["MONGODB_URI"] %>
       options:
         server_selection_timeout: 5
