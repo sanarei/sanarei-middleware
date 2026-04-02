@@ -10,7 +10,8 @@ require 'dotenv'
 Dotenv.load
 
 require 'mongoid'
-Mongoid.load!('./config/database.yml', :development)
+Mongoid.load!('./config/database.yml', ENV.fetch('RACK_ENV', 'development').
+  to_sym)
 # Mongoid::QueryCache.enabled = true
 
 # Return nil if record cannot be found using Mongoid find_by query
