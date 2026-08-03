@@ -1,3 +1,14 @@
+GIT
+  remote: https://github.com/banta/tux.git
+  revision: 0730999b996cf7987d6655112dfbc483e331f871
+  ref: 0730999
+  specs:
+    tux (0.3.0)
+      ripl (>= 0.3.5)
+      ripl-multi_line (>= 0.2.4)
+      ripl-rack (>= 0.2.0)
+      sinatra (>= 1.2.1)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -46,6 +57,7 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
+    io-console (0.8.2)
     json (2.10.1)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
@@ -65,6 +77,7 @@ GEM
     mustermann (3.0.3)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.7.4)
+    ostruct (0.6.3)
     parallel (1.27.0)
     parser (3.3.10.0)
       ast (~> 2.4.1)
@@ -79,7 +92,7 @@ GEM
     puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.2.3)
+    rack (3.2.6)
     rack-console (1.4.1)
       rack (~> 3.0)
       rack-test
@@ -99,6 +112,8 @@ GEM
     redis-client (0.26.1)
       connection_pool
     regexp_parser (2.11.3)
+    reline (0.6.3)
+      io-console (~> 0.5)
     require_all (3.0.0)
     ripl (0.7.1)
       bond (~> 0.5.1)
@@ -161,11 +176,6 @@ GEM
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
     tilt (2.6.0)
-    tux (0.3.0)
-      ripl (>= 0.3.5)
-      ripl-multi_line (>= 0.2.4)
-      ripl-rack (>= 0.2.0)
-      sinatra (>= 1.2.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (3.2.0)
@@ -190,6 +200,7 @@ DEPENDENCIES
   logger (~> 1.7)
   mongoid
   msgpack
+  ostruct
   pry
   pry-coolline
   puma
@@ -198,7 +209,9 @@ DEPENDENCIES
   rack-test
   rake
   redis
+  reline
   require_all
+  ripl-rack (= 0.2.0)
   rspec
   rubocop
   rubocop-performance
@@ -206,7 +219,7 @@ DEPENDENCIES
   shotgun
   sidekiq
   sinatra
-  tux
+  tux!
   uri (= 1.0.3)
   zlib
 
