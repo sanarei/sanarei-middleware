@@ -3,6 +3,7 @@
 require 'zlib'
 require 'json'
 require 'base64'
+require 'stringio'
 
 # Sanarei::Packetizer
 # -------------------
@@ -104,7 +105,7 @@ module Sanarei
     def compress_text(text)
       compressed = StringIO.new
       Zlib::GzipWriter.wrap(compressed) { |gz| gz.write(text) }
-      compressed.string
+      compressed.string.b
     end
 
     # Split a Gzip-compressed string into fixed-size payload chunks and wrap
@@ -139,7 +140,7 @@ module Sanarei
       num_packets.times do |i|
         start_idx = i * chunk_size
         end_idx = [start_idx + chunk_size, total_length].min
-        chunk = compressed_text[start_idx...end_idx]
+        chunk = compressed_text.byteslice(start_idx, end_idx - start_idx)
 
         # Compute CRC32 checksum for integrity verification of the raw bytes
         checksum = Zlib.crc32(chunk).to_s(16).rjust(8, '0')
