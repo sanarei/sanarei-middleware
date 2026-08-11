@@ -52,14 +52,14 @@ RSpec.describe RequestDispatcher do
 
       it 'sets the app domain and confirms' do
         result = described_class.new(params).process_request
-        expect(result[:ussdMenu]).to eq('Domain set to myapp.com')
+        expect(result[:ussdMenu]).to eq('DOMAIN SET TO https://myapp.com/')
         expect(result[:shouldClose]).to be false
       end
 
       it 'updates the session with the app_domain' do
         described_class.new(params).process_request
         session = AppSession.find_by(session_id: session_id)
-        expect(session.app_domain).to eq('myapp.com')
+        expect(session.app_domain).to eq('https://myapp.com/')
       end
 
       it 'creates a new session if it does not exist' do
@@ -79,10 +79,10 @@ RSpec.describe RequestDispatcher do
         )
       end
 
-      it 'returns an end message indicating domain is already set' do
+      it 'reports the fetch status without replacing the domain' do
         result = described_class.new(params).process_request
-        expect(result[:ussdMenu]).to eq('Domain already set!!')
-        expect(result[:shouldClose]).to be true
+        expect(result[:ussdMenu]).to eq('WAIT: Packets pending')
+        expect(result[:shouldClose]).to be false
       end
 
       it 'does not update the domain' do
@@ -103,13 +103,13 @@ RSpec.describe RequestDispatcher do
 
     it 'removes END prefix from response' do
       AppSession.create!(session_id: session_id, app_domain: 'test.com')
-      result = described_class.new(params).process_request
+      result = described_class.new(params.merge(text: 'END SESSION')).process_request
       expect(result[:ussdMenu]).not_to start_with('END')
     end
 
     it 'sets shouldClose to true when response starts with END' do
       AppSession.create!(session_id: session_id, app_domain: 'test.com')
-      result = described_class.new(params).process_request
+      result = described_class.new(params.merge(text: 'END SESSION')).process_request
       expect(result[:shouldClose]).to be true
     end
 

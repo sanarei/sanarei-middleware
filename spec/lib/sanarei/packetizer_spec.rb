@@ -30,6 +30,17 @@ RSpec.describe Sanarei::Packetizer do
       reconstructed = Zlib::GzipReader.new(StringIO.new(compressed)).read
 
       expect(reconstructed).to eq(content)
+      expect(packets).to all(satisfy do |packet|
+        JSON.parse(packet).fetch('payload').length <= described_class::MAX_BASE64_PAYLOAD_CHARS
+      end)
+      expect(packets.map { |packet| Base64.strict_encode64(packet).length }.max).to be <= 182
+    end
+
+    it 'keeps high-numbered packets within the USSD response limit' do
+      packetizer = described_class.new('content', 140)
+      packet = packetizer.send(:build_packet, 'x' * 45, index: 11_650, total: 11_652)
+
+      expect(Base64.strict_encode64(packet).length).to be <= 182
     end
   end
 end

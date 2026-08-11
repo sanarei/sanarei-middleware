@@ -43,6 +43,7 @@ require 'stringio'
 module Sanarei
   # Packetizer converts text into Gzip + JSON (Base64-encoded payload) packets with per-chunk CRC32.
   class Packetizer
+    MAX_BASE64_PAYLOAD_CHARS = 60
     # @!attribute [r] text
     #   @return [String] The original input text provided to the constructor.
     # @!attribute [r] packet_size
@@ -125,38 +126,32 @@ module Sanarei
     #   gz = compress_text('A' * 500)
     #   split_into_json_packets(gz, packet_size: 140).length # => 4
     def split_into_json_packets(compressed_text, packet_size: 140)
-      # Enforce a hard limit on Base64 payload length of 130 characters.
-      # Base64 expands data by 4/3 and pads to 4-char boundaries. To ensure
-      # the encoded payload never exceeds 130 chars, the raw chunk must be
-      # at most floor(130 / 4) * 3 = 96 bytes.
-      max_b64_chars = 50
-      max_raw_bytes = (max_b64_chars / 4) * 3 # => 96
+      # Keep the twice-encoded packet below the common 182-character USSD limit.
+      # A 60-character inner payload represents 45 raw compressed bytes and
+      # leaves room for five-digit packet navigation pointers.
+      max_raw_bytes = (MAX_BASE64_PAYLOAD_CHARS / 4) * 3
       chunk_size = [packet_size, max_raw_bytes].min
 
       total_length = compressed_text.bytesize
       num_packets = (total_length.to_f / chunk_size).ceil
-      packets = []
-
-      num_packets.times do |i|
+      Array.new(num_packets) do |i|
         start_idx = i * chunk_size
         end_idx = [start_idx + chunk_size, total_length].min
         chunk = compressed_text.byteslice(start_idx, end_idx - start_idx)
-
-        # Compute CRC32 checksum for integrity verification of the raw bytes
-        checksum = Zlib.crc32(chunk).to_s(16).rjust(8, '0')
-
-        packet = {
-          id: i + 1,
-          prev: i == 0 ? nil : i,
-          next: i == num_packets - 1 ? nil : i + 2,
-          checksum: checksum,
-          payload: Base64.strict_encode64(chunk)
-        }
-
-        packets << JSON.generate(packet)
+        build_packet(chunk, index: i, total: num_packets)
       end
+    end
 
-      packets
+    private
+
+    def build_packet(chunk, index:, total:)
+      JSON.generate(
+        id: index + 1,
+        prev: index.zero? ? nil : index,
+        next: index == total - 1 ? nil : index + 2,
+        checksum: Zlib.crc32(chunk).to_s(16).rjust(8, '0'),
+        payload: Base64.strict_encode64(chunk)
+      )
     end
   end
 end
