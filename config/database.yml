@@ -4,6 +4,12 @@ development:
       database: sanarei_middleware
       hosts:
         - localhost:27017
+test:
+  clients:
+    default:
+      uri: <%= ENV.fetch("MONGODB_TEST_URI", "mongodb://127.0.0.1:27017/sanarei_middleware_test") %>
+      options:
+        server_selection_timeout: 2
 production:
   clients:
     default:

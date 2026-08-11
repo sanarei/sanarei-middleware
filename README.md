@@ -79,6 +79,11 @@ brew services list | grep mongodb
 sudo systemctl status mongodb
 ```
 
+5. Create the MongoDB indexes used for session lookup and cache expiry:
+```bash
+bundle exec rake db:create_indexes
+```
+
 ## Running the Application
 
 ### Using Puma (Recommended for Production)
@@ -139,25 +144,15 @@ Common variations:
 
 An example worker is provided at app/workers/website_fetcher_worker.rb. You can enqueue jobs from anywhere after the app environment is loaded.
 
-Basic usage:
+Basic usage (the argument is an existing `AppSession` id):
 ```ruby
-WebsiteFetcherWorker.perform_async('https://example.com')
-```
-
-With options (headers, timeouts, etc.):
-```ruby
-options = {
-  headers: { 'User-Agent' => 'MyBot/1.0' },
-  timeout: 10,
-  follow_redirects: true
-}
-WebsiteFetcherWorker.perform_async('https://example.com', options)
+WebsiteFetcherWorker.perform_async(app_session.id.to_s)
 ```
 
 Schedule for later:
 ```ruby
-WebsiteFetcherWorker.perform_in(5.minutes, 'https://example.com')
-WebsiteFetcherWorker.perform_at(1.hour.from_now, 'https://example.com')
+WebsiteFetcherWorker.perform_in(5.minutes, app_session.id.to_s)
+WebsiteFetcherWorker.perform_at(1.hour.from_now, app_session.id.to_s)
 ```
 
 See app/workers/example_usage.rb for additional examples and controller usage patterns.
@@ -197,6 +192,18 @@ bundle exec rspec
 bundle exec rubocop
 ```
 
+## Mobile fetch protocol
+
+- `FETCH` keeps the existing synchronous behavior for current mobile clients.
+- `FETCH ASYNC` queues a fetch in Sidekiq and immediately returns a pending response.
+- `PACKETS READY?` reports whether packet generation is pending, ready, or failed.
+- `SEND PACKETS` and `SEND NEXT PACKETS` retain the legacy sequential cursor.
+- `SEND PACKET n` is retry-safe and returns the same numbered packet without advancing the cursor.
+
+Fetched pages are normalized and cached for 30 minutes. Responses are restricted to public HTTP(S)
+destinations, HTML content, 512 KiB, three redirects, and a 20-second overall timeout. Cached pages
+and inactive sessions are removed by MongoDB TTL indexes.
+
 ### Interactive Console
 ```bash
 bundle exec pry -r ./config/environment
@@ -216,7 +223,7 @@ This application follows the standard Sinatra MVC pattern:
 
 ## Database Configuration
 
-The application uses Mongoid as the MongoDB ODM. Configuration can be found in `config/mongoid.yml`.
+The application uses Mongoid as the MongoDB ODM. Configuration can be found in `config/database.yml`.
 
 ### Using a Different Database
 

@@ -3,7 +3,13 @@
 ENV['SINATRA_ENV'] ||= 'development'
 
 require_relative 'config/environment'
-require 'sinatra/activerecord/rake'
+
+namespace :db do
+  desc 'Create MongoDB indexes declared by the application models'
+  task :create_indexes do
+    Mongoid.models.each(&:create_indexes)
+  end
+end
 
 namespace :sidekiq do
   desc 'Start Sidekiq worker'

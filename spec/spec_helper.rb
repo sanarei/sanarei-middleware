@@ -8,6 +8,7 @@ require 'rack/test'
 require 'database_cleaner/mongoid'
 
 RSpec.configure do |config|
+  skip_database_cleaner = ENV['SKIP_DATABASE_CLEANER'] == 'true'
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
   config.include Rack::Test::Methods
@@ -24,13 +25,17 @@ RSpec.configure do |config|
 
   # Database Cleaner configuration for Mongoid
   config.before(:suite) do
+    next if skip_database_cleaner
+
     DatabaseCleaner.strategy = :deletion
     DatabaseCleaner.clean_with(:deletion)
   end
 
   config.around(:each) do |example|
-    DatabaseCleaner.cleaning do
+    if skip_database_cleaner
       example.run
+    else
+      DatabaseCleaner.cleaning { example.run }
     end
   end
 
