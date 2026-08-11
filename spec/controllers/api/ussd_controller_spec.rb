@@ -124,13 +124,32 @@ RSpec.describe Api::UssdController, type: :controller do
         AppSession.create!(session_id: session_id, app_domain: 'test.com')
       end
 
-      it 'returns domain already set message' do
+      it 'reports pending packets without replacing the domain' do
         post "/api/ussd/process_request/#{session}/#{session_id}/#{state}",
              payload.to_json,
              headers
         response = JSON.parse(last_response.body)
-        expect(response['ussdMenu']).to eq('Domain already set!!')
-        expect(response['shouldClose']).to be true
+        expect(response['ussdMenu']).to eq('WAIT: Packets pending')
+        expect(response['shouldClose']).to be false
+      end
+    end
+
+    context 'with invalid input' do
+      it 'rejects malformed JSON' do
+        post "/api/ussd/process_request/#{session}/#{session_id}/#{state}", '{', headers
+
+        expect(last_response.status).to eq(400)
+        expect(JSON.parse(last_response.body)['ussdMenu']).to eq('Invalid JSON payload')
+      end
+
+      it 'rejects a payload larger than the request limit' do
+        oversized_payload = { text: 'x' * (described_class::MAX_REQUEST_BYTES + 1) }
+        post "/api/ussd/process_request/#{session}/#{session_id}/#{state}",
+             oversized_payload.to_json,
+             headers
+
+        expect(last_response.status).to eq(413)
+        expect(JSON.parse(last_response.body)['responseExitCode']).to eq(413)
       end
     end
   end
