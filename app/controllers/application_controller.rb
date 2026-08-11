@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './config/environment'
+require 'time'
 
 class ApplicationController < Sinatra::Base
   configure :production, :development do
@@ -14,5 +15,16 @@ class ApplicationController < Sinatra::Base
 
   get '/' do
     erb :welcome
+  end
+
+  get '/health' do
+    content_type :json
+    cache_control :no_store
+
+    {
+      status: 'ok',
+      service: 'sanarei-middleware',
+      timestamp: Time.now.utc.iso8601
+    }.to_json
   end
 end
