@@ -2,7 +2,7 @@ name: Keep Render App Awake
 
 on:
   schedule:
-    - cron: "*/3 * * * *" # Every 10 minutes
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -14,4 +14,6 @@ jobs:
         run: |
           curl --fail --silent --show-error \
             --max-time 30 \
-            https://sanarei-sample-app.onrender.com/
+            --retry 3 \
+            --user-agent "sanarei-health-check/1.0" \
+            https://sanarei-middleware.onrender.com/health
