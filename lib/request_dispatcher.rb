@@ -12,6 +12,7 @@ class RequestDispatcher
   end
 
   def initialize(params)
+    params = params.to_h.symbolize_keys
     @session = AppSession.for_request(params.fetch(:session_id))
     @input = params[:text].to_s.strip
     @input = '' if input == params[:shortCode].to_s

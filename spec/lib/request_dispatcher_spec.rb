@@ -30,6 +30,22 @@ RSpec.describe RequestDispatcher do
     end
   end
 
+  describe '#initialize' do
+    it 'accepts Rack-style string keys' do
+      session = instance_double(AppSession)
+      expect(AppSession).to receive(:for_request).with(session_id).and_return(session)
+
+      dispatcher = described_class.new(
+        'session_id' => session_id,
+        'text' => ' FETCH ',
+        'shortCode' => '*123#'
+      )
+
+      expect(dispatcher.input).to eq('FETCH')
+      expect(dispatcher.session).to eq(session)
+    end
+  end
+
   describe '#process_request' do
     context 'when input is blank (first request)' do
       let(:input_text) { '' }
