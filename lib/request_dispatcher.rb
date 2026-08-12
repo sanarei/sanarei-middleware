@@ -37,7 +37,7 @@ class RequestDispatcher
     return set_domain_or_prompt unless session.app_domain
 
     return close_session if command == 'END SESSION'
-    return fetch_page if command == 'FETCH'
+    return fetch_page if command == 'FETCH CONTENT'
     return enqueue_page_fetch if command == 'FETCH ASYNC'
     return @response = packet_delivery.next_packet if PACKET_COMMANDS.include?(command)
 
@@ -49,13 +49,13 @@ class RequestDispatcher
 
     normalized_url = Sanarei::UrlNormalizer.call(input, resolve: false)
     reset_session(normalized_url)
-    @response = "CON DOMAIN SET TO #{normalized_url}"
+    @response = "CON URL SET TO #{normalized_url}"
   rescue ArgumentError => e
     @response = "END Invalid website address: #{e.message}"
   end
 
   def prompt_for_domain
-    @response = 'CON Enter App domain'
+    @response = 'CON ENTER URL'
   end
 
   def reset_session(normalized_url)
