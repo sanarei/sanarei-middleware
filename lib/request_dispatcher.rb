@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class RequestDispatcher
+  FETCH_COMMANDS = ['FETCH', 'FETCH CONTENT'].freeze
   PACKET_COMMANDS = ['SEND PACKETS', 'SEND NEXT PACKETS'].freeze
 
   attr_reader :session, :input, :response
@@ -37,7 +38,7 @@ class RequestDispatcher
     return set_domain_or_prompt unless session.app_domain
 
     return close_session if command == 'END SESSION'
-    return fetch_page if command == 'FETCH CONTENT'
+    return fetch_page if FETCH_COMMANDS.include?(command)
     return enqueue_page_fetch if command == 'FETCH ASYNC'
     return @response = packet_delivery.next_packet if PACKET_COMMANDS.include?(command)
 
@@ -108,7 +109,7 @@ class RequestDispatcher
   end
 
   def command
-    @command ||= input.upcase
+    @command ||= input.split('*').last.to_s.squish.upcase
   end
 
   def logger

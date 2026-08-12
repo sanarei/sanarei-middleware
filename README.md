@@ -194,7 +194,7 @@ bundle exec rubocop
 
 ## Mobile fetch protocol
 
-- `FETCH` keeps the existing synchronous behavior for current mobile clients.
+- `FETCH CONTENT` fetches synchronously; the legacy `FETCH` command remains supported.
 - `FETCH ASYNC` queues a fetch in Sidekiq and immediately returns a pending response.
 - `PACKETS READY?` reports whether packet generation is pending, ready, or failed.
 - `SEND PACKETS` and `SEND NEXT PACKETS` retain the legacy sequential cursor.

@@ -47,6 +47,35 @@ RSpec.describe RequestDispatcher do
   end
 
   describe '#process_request' do
+    context 'when the gateway sends accumulated USSD input' do
+      let(:input_text) { 'https://example.com*FETCH CONTENT' }
+      let(:session) do
+        instance_double(
+          AppSession,
+          app_domain: 'https://example.com/',
+          id: BSON::ObjectId.new,
+          session_id: session_id,
+          reload: true
+        )
+      end
+      let(:worker) { instance_double(WebsiteFetcherWorker) }
+
+      before do
+        allow(AppSession).to receive(:for_request).with(session_id).and_return(session)
+        allow(session).to receive(:fetch_status).and_return('idle', 'ready')
+        allow(session).to receive(:packets).and_return([], ['packet'])
+        allow(WebsiteFetcherWorker).to receive(:new).and_return(worker)
+      end
+
+      it 'runs the fetch command from the final USSD segment' do
+        expect(worker).to receive(:perform).with(session.id.to_s)
+
+        result = described_class.new(params).process_request
+
+        expect(result[:ussdMenu]).to eq('PACKETS READY')
+      end
+    end
+
     context 'when input is blank (first request)' do
       let(:input_text) { '' }
 
