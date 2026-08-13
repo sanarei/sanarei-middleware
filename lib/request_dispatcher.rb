@@ -105,7 +105,8 @@ class RequestDispatcher
   end
 
   def packets_ready?
-    session.fetch_status == 'ready' && Array(session.packets).any?
+    session.fetch_status == 'ready' &&
+      Sanarei::Packetizer.transport_safe?(session.packets)
   end
 
   def command

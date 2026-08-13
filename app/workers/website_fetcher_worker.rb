@@ -29,8 +29,24 @@ class WebsiteFetcherWorker
     cached_page = CachedPage.fresh.find_by(normalized_url: normalized_url)
     return unless cached_page
 
+    unless Sanarei::Packetizer.transport_safe?(cached_page.packets)
+      return migrate_cached_packets(cached_page, normalized_url)
+    end
+
     logger.info "Page cache hit: #{normalized_url}"
     cached_page.packets
+  end
+
+  def migrate_cached_packets(cached_page, normalized_url)
+    logger.info "Re-packetizing incompatible page cache: #{normalized_url}"
+    html = Sanarei::Depacketizer.call(cached_page.packets)
+    packets = Sanarei::Packetizer.call(html)
+    cached_page.update!(packets: packets, content_bytes: html.bytesize)
+    packets
+  rescue StandardError => e
+    logger.warn "Discarding invalid page cache: #{normalized_url} error=#{e.message}"
+    cached_page.destroy
+    nil
   end
 
   def fetch_packets(normalized_url)

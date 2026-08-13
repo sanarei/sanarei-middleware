@@ -47,6 +47,36 @@ RSpec.describe RequestDispatcher do
   end
 
   describe '#process_request' do
+    context 'when a ready session contains oversized legacy packets' do
+      let(:input_text) { 'FETCH CONTENT' }
+      let(:session) do
+        instance_double(
+          AppSession,
+          app_domain: 'https://example.com/',
+          id: BSON::ObjectId.new,
+          session_id: session_id,
+          fetch_status: 'ready',
+          packets: ['oversized-packet'],
+          reload: true
+        )
+      end
+      let(:worker) { instance_double(WebsiteFetcherWorker) }
+
+      before do
+        allow(AppSession).to receive(:for_request).with(session_id).and_return(session)
+        allow(Sanarei::Packetizer).to receive(:transport_safe?).and_return(false, true)
+        allow(WebsiteFetcherWorker).to receive(:new).and_return(worker)
+      end
+
+      it 'regenerates the session packets before reporting ready' do
+        expect(worker).to receive(:perform).with(session.id.to_s)
+
+        result = described_class.new(params).process_request
+
+        expect(result[:ussdMenu]).to eq('PACKETS READY')
+      end
+    end
+
     context 'when the gateway sends accumulated USSD input' do
       let(:input_text) { 'https://example.com*FETCH CONTENT' }
       let(:session) do

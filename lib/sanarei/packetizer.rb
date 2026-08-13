@@ -43,7 +43,8 @@ require 'stringio'
 module Sanarei
   # Packetizer converts text into Gzip + JSON (Base64-encoded payload) packets with per-chunk CRC32.
   class Packetizer
-    MAX_BASE64_PAYLOAD_CHARS = 60
+    MAX_USSD_RESPONSE_CHARS = 156
+    MAX_BASE64_PAYLOAD_CHARS = 44
     # @!attribute [r] text
     #   @return [String] The original input text provided to the constructor.
     # @!attribute [r] packet_size
@@ -65,6 +66,12 @@ module Sanarei
       #   packets.first # => "\x93\xA2id\x01..." (binary String)
       def call(text, packet_size: 140)
         new(text, packet_size).create_packets
+      end
+
+      def transport_safe?(packets)
+        Array(packets).any? && Array(packets).all? do |packet|
+          Base64.strict_encode64(packet).length <= MAX_USSD_RESPONSE_CHARS
+        end
       end
     end
 
@@ -126,9 +133,9 @@ module Sanarei
     #   gz = compress_text('A' * 500)
     #   split_into_json_packets(gz, packet_size: 140).length # => 4
     def split_into_json_packets(compressed_text, packet_size: 140)
-      # Keep the twice-encoded packet below the common 182-character USSD limit.
-      # A 60-character inner payload represents 45 raw compressed bytes and
-      # leaves room for five-digit packet navigation pointers.
+      # Keep the twice-encoded packet below the observed 160-character carrier limit.
+      # A 44-character inner payload represents 33 raw compressed bytes and
+      # leaves four characters of transport headroom for five-digit packet pointers.
       max_raw_bytes = (MAX_BASE64_PAYLOAD_CHARS / 4) * 3
       chunk_size = [packet_size, max_raw_bytes].min
 
